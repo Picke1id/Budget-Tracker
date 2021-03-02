@@ -1,6 +1,8 @@
+// Setting variables
 const CACHE_NAME = "static-cache-v2";
 const DATA_CACHE_NAME = "data-cache-v1";
 
+// Files to be cached
 const FILES_TO_CACHE = [
     "/",
     "/index.html",
@@ -12,47 +14,52 @@ const FILES_TO_CACHE = [
     "/icons/icon-512x512.png"
 ];
 
-self.addEventListener("install", function (evt) {
-    evt.waitUntil(
+// Installing and calling the service worker api
+self.addEventListener("install", function (event) {
+    event.waitUntil(
         caches.open(CACHE_NAME).then(cache => {
-            console.log("Your files were pre-cached successfully!");
+            console.log("Your files have been cached successfully!");
             return cache.addAll(FILES_TO_CACHE);
         })
     );
-    
+
+    // Activating service worker in browser after installation
     self.skipWaiting();
 });
 
-
-self.addEventListener("activate", function (evt) {
-    evt.waitUntil(
+// Activating service worker to remove old cache data
+self.addEventListener("activate", function (event) {
+    event.waitUntil(
         caches.keys().then(keyList => {
             return Promise.all(
                 keyList.map(key => {
                     if (key !== CACHE_NAME && key !== DATA_CACHE_NAME) {
-                        console.log("Removing old cache data", key);
+                        console.log("Now removing old cache data", key);
                         return caches.delete(key);
                     }
                 })
             );
         })
     );
-
+    // Setting service worker as the controller for all clients within scope
     self.clients.claim();
 });
 
-self.addEventListener("fetch", function (evt) {
-    if (evt.request.url.includes("/api/")) {
-        evt.respondWith(
+// Fetching data from service worker api
+self.addEventListener("fetch", function (event) {
+    if (event.request.url.includes("/api/")) {
+        event.respondWith(
             caches.open(DATA_CACHE_NAME).then(cache => {
-                return fetch(evt.request)
+                return fetch(event.request)
                     .then(response => {
+                        // If successful, response is cloned and stored in the cache
                         if (response.status === 200) {
-                            cache.put(evt.request.url, response.clone());
+                            cache.put(event.request.url, response.clone());
                         }
                         return response;
                     }).catch(err => {
-                        return cache.match(evt.request);
+                        // If network request fails, attempt to retrieve it from the cache
+                        return cache.match(event.request);
                     });
             }).catch(err => console.log(err))
         );
@@ -60,9 +67,10 @@ self.addEventListener("fetch", function (evt) {
         return;
     }
 
-    evt.respondWith(
-        caches.match(evt.request).then(function (response) {
-            return response || fetch(evt.request);
+    // Prevent the browser's default fetch handling. If we didn't find a match in the cache, use the network.
+    event.respondWith(
+        caches.match(event.request).then(function (response) {
+            return response || fetch(event.request);
         })
     );
 });
