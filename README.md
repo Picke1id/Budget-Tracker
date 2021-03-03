@@ -37,7 +37,7 @@ When brought back online:
 If choosing to run locally, clone this repository to your machine or download zip file.
 
 ## Usage
-After the repository has been cloned, use terminal to change directories into "Fitness-Tracker" directory. Run the command "npm install" and then "node server.js", and then view application on http://localhost:3000/. Otherwise, the app can be accessed live at the Heroku link provided below. 
+After the repository has been cloned, use terminal to change directories into "Budget-Tracker" directory. Run the command "npm install" and then "node server.js", and then view application on http://localhost:3000/. Otherwise, the app can be accessed live at the Heroku link provided below. 
 
 ## License 
 ![License Badge](https://img.shields.io/badge/License-MIT-green)
